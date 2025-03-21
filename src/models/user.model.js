@@ -57,10 +57,12 @@ userSchema.pre("save", async function (next) {
     this.password = bcrypt.hash(this.password, 10)
     next()
 })
+// If this check wasn't there, every time a user updates their profile (e.g., changing email), their password would be hashed again, making them unable to log in since bcrypt hashes are one-way and hashing an already hashed password corrupts the stored value.
 
 userSchema.methods.isPasswordCorrect = async function(password){
      return await bcrypt.compare(password, this.password)
 }
+// This is commonly used for login authentication when verifying a user's credentials.
 
 userSchema.methods.generateAccessToken = function(){
     return jwt.sign(
@@ -99,3 +101,10 @@ userSchema.methods.generateRefreshToken = function()
     }
 
 export const User = mongoose.model("User, userSchema")
+
+
+// next() is called to move to the next middleware or save operation.
+
+// .pre("save", async function (next)) means this function will execute before saving the user document to the database.
+
+// 'this' refers to the instance of the model created which contains the userschema and and contains all the details and parametrs of the userschema
