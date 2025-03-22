@@ -1,6 +1,10 @@
+// SUMMARY OF THIS CODE:
+// Instead of writing try...catch for every async route, we modularize the error handling by creating the asyncHandler function. This function automatically catches errors and passes them to Express’s error handler.
+
+
 //creating a method
 const asyncHandler = (requestHandler) => {
-    (req, res, next) => {
+    return (req, res, next) => {
         Promise.resolve(requestHandler(req, res, next)).catch((err) => next(err))
     }
 }

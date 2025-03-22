@@ -19,4 +19,15 @@ app.use(express.static("public"))
 app.use(cookieParser())
 //for using and modifying users browsers cookies
 
+
+//routes import 
+import userRouter from './routes/user.routes.js'
+
+//routes declaration 
+app.use("/api/v1/users", userRouter)
+// sirf users bhi chalega but good practise hai api aur v1 likhne ki(version1)
+//koi bhi jab /users type krega toh ham usko control de denge userRouter pe, abb wahan jo bhi hoga /register ya /login uss hisaab se wahan redirect krdega
+
+// url- http://localhost:8000/users/register
+
 export { app }
