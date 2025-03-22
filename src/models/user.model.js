@@ -62,7 +62,7 @@ userSchema.pre("save", async function (next) {
 userSchema.methods.isPasswordCorrect = async function(password){
      return await bcrypt.compare(password, this.password)
 }
-// This is commonly used for login authentication when verifying a user's credentials.
+// This is commonly used for login authentication when verifying a user's credentials. 
 
 userSchema.methods.generateAccessToken = function(){
     return jwt.sign(
