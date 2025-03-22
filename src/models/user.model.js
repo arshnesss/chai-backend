@@ -54,7 +54,7 @@ userSchema.pre("save", async function (next) {
     if(!this.isModified("password")){
         return next();
     }
-    this.password = bcrypt.hash(this.password, 10)
+    this.password = await bcrypt.hash(this.password, 10)
     next()
 })
 // If this check wasn't there, every time a user updates their profile (e.g., changing email), their password would be hashed again, making them unable to log in since bcrypt hashes are one-way and hashing an already hashed password corrupts the stored value.
@@ -101,6 +101,7 @@ userSchema.methods.generateRefreshToken = function()
     }
 
 export const User = mongoose.model("User, userSchema")
+// ye user directly database se baat kr skta hai since ye mongoose ke through bana hai 
 
 
 // next() is called to move to the next middleware or save operation.
