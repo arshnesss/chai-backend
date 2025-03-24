@@ -4,14 +4,13 @@ import dotenv from "dotenv";
 dotenv.config({ path: "./.env" });  // Ensure this is at the very top
 import express from "express";
 import connectDB from "./db/index.js";
-const app = express();
+import { app } from "./app.js";
 
-console.log("MongoDB URI:", process.env.MONGODB_URI);
+console.log("MongoDB URI:", process.env.MONGODB_URI );
 
 connectDB()
-
 .then(() => {
-    app.listen(process.env.PORT || 8000, () => {
+    app.listen(process.env.PORT || 7000, () => {
         console.log(`Server is running at port : ${process.env.PORT}`);    
     })
 })

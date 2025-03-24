@@ -19,7 +19,7 @@ const userSchema = new Schema(
             lowercase: true,
             trim: true
         },
-        fullname: {
+        fullName: {
             type: String,
             required: true,
             trim: true,
@@ -100,7 +100,7 @@ userSchema.methods.generateRefreshToken = function()
         )    
     }
 
-export const User = mongoose.model("User, userSchema")
+export const User = mongoose.model("User", userSchema)
 // ye user directly database se baat kr skta hai since ye mongoose ke through bana hai 
 
 

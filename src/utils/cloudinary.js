@@ -1,4 +1,4 @@
-import {v2 as arshh} from "cloudinary"
+import {v2 as cloudinary} from "cloudinary"
 import { log } from "console";
 import fs from "fs" //file system(file ko read, write, remove)
 
@@ -17,7 +17,8 @@ const uploadOnCloudinary = async (localFilePath) => {
             resource_type: "auto"
         })
         //file has been uploaded successfully
-        console.log("file is uploaded on cloudinary", response.url);
+        // console.log("file is uploaded on cloudinary", response.url);
+        fs.unlinkSync(localFilePath)
         return response;
         
     } catch (error) {
