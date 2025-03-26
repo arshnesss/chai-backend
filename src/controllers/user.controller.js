@@ -4,6 +4,26 @@ import { User} from "../models/user.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 
+// generating a method
+const generateAccessAndRefreshTokens = async(userId) =>
+{
+    try {
+        const user = await User.findById(userId)
+        const accessToken = user.generateAccessToken()
+        const refreshToken = user.generateRefreshToken()
+
+        // refreshToken database mein save krwa diya(below 2 lines)
+        user.refreshToken = refreshToken,
+        await user.save({validateBeforeSave: false})
+
+        return {accessToken, refreshToken}
+        
+    } catch (error) {
+        throw new ApiError(500, "Something went wrong while generating access and refresh tokens")
+    }
+}
+
+
 const registerUser = asyncHandler( async (req, res) => {
     // get user details from frontend
     // validation - not empty
@@ -80,7 +100,99 @@ const registerUser = asyncHandler( async (req, res) => {
 
 } )
 
+const loginUser = asyncHandler(async (req, res) =>{
+    // req body ->data
+    // username or email based
+    // find the User
+    // password check 
+    // access and refresh token 
+    // send cookie
+
+
+    //jo bhi data chahiye lelo
+    const {email, username, password} = req.body
+    console.log(email);
+    
+    if (!username && !email) {
+        throw new ApiError(400, "username or email is required")
+    }
+
+    //ham ya toh findOne ke andar sirf username likh dte ya fir sirf email likh dete, but agar hamein dekhna hai ki ya toh ye match ho jaye ya toh woh match ho jaye toh ham or operator use krke likhte hain
+    const user = await User.findOne({
+        $or: [{username}, {email}]
+    })
+
+    if(!user){
+        throw new ApiError(404, "User does not exist")
+    }
+
+    const isPasswordValid = await user.isPasswordCorrect(password)
+
+    if(!isPasswordValid){
+        throw new ApiError(401, "{Password is wrong}")
+    }
+
+    //destructure krke le liya
+    const {accessToken, refreshToken} = await generateAccessAndRefreshTokens(user._id)
+
+    const loggedIn = await User.findById(user._id).select("-password -refreshToken")
+
+    // neeche wala step krne se cookies sirf server ke through modifiable rehti hai frontend se modify nhi ho pati
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+        new ApiResponse(
+            200,
+            {
+                user: loggedIn, accessToken, refreshToken
+            },
+            "User logged in successfully"
+        ) 
+    )
+    // when we write res.cookie("accessToken", accessToken, options), are we only defining the things in response. The actual sending happens when you call .json()
+
+})
+const logoutUser = asyncHandler(async(req, res) =>{
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set:{ 
+                // deta hai kya kya update krna hai
+                // refresh token db se gayab hogya
+                refreshToken: undefined
+            }
+        },    
+        {
+            new: true
+        }
+
+    )
+
+
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    //cookies clear krni hain
+    return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(new ApiResponse(200, {}, "User logged out"))
+})
+    
+
 
 export {
     registerUser,
+    loginUser,
+    logoutUser
 }
