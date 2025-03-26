@@ -365,3 +365,43 @@ export {
     updateUserAvatar,
     updateUserCoverImage
 }
+
+
+// => generateAccessAndRefreshTokens
+
+// *If we didn't update the refresh token, an old refresh token would still be valid
+// *user.refreshToken = refreshToken;
+// This updates the local JavaScript object, but the change is not yet saved to the database, hence the save line saves the value of the refresh token to the database
+
+// => registerUser
+
+// *line 44 ; some(field => field?.trim() === "") checks if any field is empty.some() is an array method that checks if at least one element in the array meets a condition. trim() removes any leading/trailing spaces.
+// * $or: [{ username }, { email }] in this or is a mongodb operator that chekcs if wither of these condiitons is true, and here username and email are actual values, not fields
+// * we write the things in line 64 because what is the thing inside isnt an array and what if its an empty array, so these things are prevented wiht doing this and we checking for avatar but not for coverImge hence we can employ an if condition istead of optional chaining
+// *User is a Mongoose model that represents the users collection in the MongoDB database.
+
+// => logoutUser
+
+// *Purpose: Logs out the user by clearing refresh tokens from DB and cookies.
+// *when do we need to use secure cookie options-
+//     -If you store accessToken or refreshToken in cookies, you must use secure options to prevent security vulnerabilities.
+//     -When a user logs out, you should clear the cookies securely.
+// * Why Can’t We Clear Cookies Outside of res?
+// Cookies exist on the client side (browser), not the server.The server can only instruct the browser to delete cookies via res.clearCookie() or by setting an expired cookie.   
+// *In most cases where there is an exchange of tokens, you should use secure cookie options 
+// *new: true makes sure that the function returns the updated document instead.
+// *$set is a MongoDB update operator used to update specific fields.
+
+// => changeCurrentPassword
+// *req.user._id is used when
+//  Source: Extracted from an authenticated user’s token (usually from JWT)
+// ✅ Use Case: Used when the user is already logged in and making a request
+// and 
+// req.body._id is used when the frontend sends a payload
+
+
+
+
+
+
+

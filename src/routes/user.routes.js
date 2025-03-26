@@ -32,3 +32,6 @@ router.route("/logout").post(verifyJWT, logoutUser)
 router.route("/refresh-token").post(refreshAccessToken)
 
 export default router
+
+// => tips
+// *When a user logs out, we use verifyJWT in the logout route to ensure that only an authenticated user can log out.

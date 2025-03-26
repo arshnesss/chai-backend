@@ -109,3 +109,11 @@ export const User = mongoose.model("User", userSchema)
 // .pre("save", async function (next)) means this function will execute before saving the user document to the database.
 
 // 'this' refers to the instance of the model created which contains the userschema and and contains all the details and parametrs of the userschema
+
+// return in ln 68 ensures that the token is returned as a string
+
+//✅ JWT is manual → The client (frontend) must explicitly attach the token to the Authorization header in every request.Cookies are automatic → The browser automatically sends cookies with every request to the domain that set them. in short both help in authorization
+
+//generateAccessToken() is defined on the schema's instance methods and must be called on a specific user document retrieved from the database.User is the data in database and user is the instance of the data
+
+//user is an instance of the User model, which means it has access to all methods defined in the User schema.

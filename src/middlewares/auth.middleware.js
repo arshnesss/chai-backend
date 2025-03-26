@@ -29,3 +29,13 @@ export const verifyJWT = asyncHandler(async(req, res, next) => {
         throw new ApiError(401, error.message || "Inavlid Access Token")
     }
 })
+
+
+
+// =>important info
+
+// *req.header
+// t is used to access request headers, which contain metadata about the request (e.g., authorization tokens, content type, etc.).
+
+// * req.body
+// It is used to access the main data (payload) sent by the client in the request body.
