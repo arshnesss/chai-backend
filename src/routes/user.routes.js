@@ -2,6 +2,7 @@ import { Router } from "express";
 import { loginUser, registerUser, logoutUser } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { refreshAccessToken } from "../controllers/user.controller.js";
 
 const router = Router()
 
@@ -23,8 +24,11 @@ router.route("/register").post(
 router.route("/login").post(loginUser)
 
 //secured routes
+//secured route means user should be logged in
 //yahan verifyJWT middleware hamnein inject krdiya beech mein, yahan pehle isko run krega but fir ye kaun batayega ki iske agla run krna hai, ye batayega verifyJWT ke last mein likha hua next()
 router.route("/logout").post(verifyJWT, logoutUser)
 
+//yahan neeche sara ka sara decode krne ka kaam controller mein kr rkha hai isliye yahan jwt ki zaroorat nhi padegi
+router.route("/refresh-token").post(refreshAccessToken)
 
 export default router
