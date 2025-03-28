@@ -259,7 +259,11 @@ const changeCurrentPassword = asyncHandler(async(req, res) => {
 const getCurrentUser = asyncHandler(async(req, res) => {
     return res
     .status(200)
-    .json(200, req.user, "current user fetched successfully")
+    .json(new ApiResponse(
+        200, 
+        req.user, 
+        "current user fetched successfully"
+    ))
 })
 
 const updateAccountDetails = asyncHandler(async(req, res) => {
@@ -270,7 +274,7 @@ const updateAccountDetails = asyncHandler(async(req, res) => {
     }
 
     //neeche user ko update krdiya
-    const User = User.findByIdAndUpdate(
+    const User = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set: {
@@ -352,6 +356,140 @@ const updateUserCoverImage = asyncHandler(async(req, res) =>
         )
     })
 
+const getUserChannelProfile = asyncHandler(async(req, res) =>{
+    const {username} = req.params
+
+    if(!username?.trim()) {
+        throw new ApiError(400, "username is missing")
+    }
+
+    const channel = await User.aggregate([
+        {
+            $match: {
+                username: username?.toLowerCase()
+            }
+        },
+        {
+            // to find number of subscribers
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers"
+            }
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscribedTo"
+            }
+        },   
+        { 
+            $addFields: {
+                subscribersCount: {
+                    $size: "$subscribers" 
+                    // ye subscribers field ka size calculate krlega
+                    //field ke saath dollar use krte hain
+                },
+                channelsSubscribedToCount: {
+                    $size: "$subscribedTo"
+                },
+                //ye upar wale dono user mein do fields add krdenge
+                isSubscribed:{
+                    $cond: {
+                        if:{$in: [req.user?._id, "$subscribers.subscriber"]},
+                        then: true,
+                        else: false
+                    }
+                }                
+            }
+        },
+        {
+            // selected cheezein dega
+            $project: {
+                fullName: 1,
+                username: 1,
+                subscribersCount: 1,
+                channelsSubscribedToCount: 1,
+                isSubscribed: 1,
+                avatar: 1,
+                coverImage: 1,
+                email: 1
+            }
+        }
+    ])
+
+    if (!channel?.length) { 
+        // This expression checks whether the channel array does not exist or is empty.
+        throw new ApiError(404, "channel does not exist")
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            channel[0], 
+            "User channel fetched successfully"
+        )
+    )
+})    
+
+const getWatchHistory = asyncHandler(async(req, res) =>{
+    const user = await User.aggregate([
+        {
+            $match: {
+                _id: new mongoose.Types.ObjectId(req.user._id)
+            },
+            $lookup: {
+                from: "videos",
+                localField: "watchHistory",
+                foreignField: "_id",
+                as: "watchHistory",
+                pipeline:[
+                    {
+                        $lookup: {
+                            from: "users",
+                            localField: "owner",
+                            foreignField: "_id",
+                            as: "owner",
+                            pipeline: [
+                                {
+                                    $project: {
+                                        fullName: 1,
+                                        username: 1,
+                                        avatar: 1
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    // abb jo bhi kr rahe frontend wale bande ki ease ke liye kr rahe kyunki ek array return hoga jismein se first element mein hamari cheezein hongi abb usko aur acha kr rahe 
+                    {
+                       $addFields: {
+                        owner: {
+                            $first: "$owner"
+                        }
+                        // $addFields → Adds new fields or modifies existing ones.
+                       } 
+                    }
+                ]
+            }
+        }
+    ]) 
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            user[0].getWatchHistory, //since sub pipelines
+            "Watch history fetched successfully"
+        )
+    )
+})
+
 
 
 export {
@@ -363,7 +501,9 @@ export {
     getCurrentUser,
     updateAccountDetails,
     updateUserAvatar,
-    updateUserCoverImage
+    updateUserCoverImage,
+    getUserChannelProfile,
+    getWatchHistory
 }
 
 
@@ -373,12 +513,14 @@ export {
 // *user.refreshToken = refreshToken;
 // This updates the local JavaScript object, but the change is not yet saved to the database, hence the save line saves the value of the refresh token to the database
 
+
 // => registerUser
 
 // *line 44 ; some(field => field?.trim() === "") checks if any field is empty.some() is an array method that checks if at least one element in the array meets a condition. trim() removes any leading/trailing spaces.
 // * $or: [{ username }, { email }] in this or is a mongodb operator that chekcs if wither of these condiitons is true, and here username and email are actual values, not fields
 // * we write the things in line 64 because what is the thing inside isnt an array and what if its an empty array, so these things are prevented wiht doing this and we checking for avatar but not for coverImge hence we can employ an if condition istead of optional chaining
 // *User is a Mongoose model that represents the users collection in the MongoDB database.
+
 
 // => logoutUser
 
@@ -392,12 +534,27 @@ export {
 // *new: true makes sure that the function returns the updated document instead.
 // *$set is a MongoDB update operator used to update specific fields.
 
+
 // => changeCurrentPassword
+
 // *req.user._id is used when
 //  Source: Extracted from an authenticated user’s token (usually from JWT)
 // ✅ Use Case: Used when the user is already logged in and making a request
 // and 
 // req.body._id is used when the frontend sends a payload
+
+
+// => getUserChannelProfile
+
+// *The :id in the route (/user/:id) is a parameter.
+// When a user visits /user/123, req.params.id will be "123".
+// It lets you get dynamic values from the URL.
+// *ln 366, this aggregation pipeline is used to find a user by username and fetch the number of subscribers they have by joining the subscriptions collection.
+// *The $addFields stage in a MongoDB aggregation pipeline adds new fields to documents or modifies existing fields.
+// * ln 402, $subscribers.subscriber → This is an array containing the subscriber field from the subscriptions collection.
+// Checks if the logged-in user’s ID exists in this array.
+
+
 
 
 
