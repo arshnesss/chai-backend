@@ -6,7 +6,7 @@ import { User } from "../models/user.model.js";
 //this will verify is user exists or not 
 export const verifyJWT = asyncHandler(async(req, res, next) => {
     try {
-        req.cookies?.accessToken || req.header("Authorisation")?.replace("Bearer", "")
+        const token = req.cookies?.accessToken || req.header("Authorisation")?.replace("Bearer", "")
         //upar ya toh cookie se token nikal lo ya fir || lagake authorization header se token nikal lo
     
         if(!token){

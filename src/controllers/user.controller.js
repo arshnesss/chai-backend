@@ -4,6 +4,7 @@ import { User} from "../models/user.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken"
+import mongoose from "mongoose";
 
 // generating a method
 const generateAccessAndRefreshTokens = async(userId) =>
@@ -164,10 +165,10 @@ const logoutUser = asyncHandler(async(req, res) =>{
     await User.findByIdAndUpdate(
         req.user._id,
         {
-            $set:{ 
+            $unset:{ 
                 // deta hai kya kya update krna hai
                 // refresh token db se gayab hogya
-                refreshToken: undefined
+                refreshToken: 1
             }
         },    
         {
@@ -442,7 +443,9 @@ const getWatchHistory = asyncHandler(async(req, res) =>{
         {
             $match: {
                 _id: new mongoose.Types.ObjectId(req.user._id)
-            },
+            }
+        },  
+        {  
             $lookup: {
                 from: "videos",
                 localField: "watchHistory",
@@ -484,7 +487,7 @@ const getWatchHistory = asyncHandler(async(req, res) =>{
     .json(
         new ApiResponse(
             200,
-            user[0].getWatchHistory, //since sub pipelines
+            user[0].watchHistory, //since sub pipelines
             "Watch history fetched successfully"
         )
     )

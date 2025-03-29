@@ -117,3 +117,11 @@ export const User = mongoose.model("User", userSchema)
 //generateAccessToken() is defined on the schema's instance methods and must be called on a specific user document retrieved from the database.User is the data in database and user is the instance of the data
 
 //user is an instance of the User model, which means it has access to all methods defined in the User schema.
+
+// In Mongoose (MongoDB ODM), hooks (middleware) let you execute code before or after database operations like saving, updating, or deleting a document.
+
+// Pre Hook (Before Saving Data)
+// ✅ Runs before saving a document to the database.
+
+// Post Hook (After Data is Saved)
+// ✅ Runs after a document is saved.
